@@ -6,16 +6,18 @@ const filters = ["indoor", "outdoor", "lights", "parking", "water", "toilets"];
 const yes = value => String(value).toLowerCase() === "yes" || value === true;
 
 function markerIcon(court) {
-  const kind = court.type === "Indoor" ? "indoor" : court.condition === "Poor" ? "poor" : "";
+  const kind = court.type === "Indoor" ? "indoor" : court.condition === "Poor" || court.surface === "Poor" ? "poor" : "";
   return L.divIcon({ className:"", html:`<div class="marker ${kind}">🏀</div>`, iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-15] });
 }
 
 function popup(court) {
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${court.lat},${court.lng}`;
-  return `<div class="court-popup"><h2>${court.name}</h2><p>${court.description || ""}</p><div class="details">
-    <span>Type</span><strong>${court.type || "—"}</strong><span>Surface</span><strong>${court.surface || "—"}</strong>
-    <span>Hoops</span><strong>${court.hoops ?? "—"}</strong><span>Condition</span><strong>${court.condition || "—"}</strong>
-    <span>Lights</span><strong>${court.lights || "No"}</strong><span>Parking</span><strong>${court.parking || "No"}</strong>
+  const safe = value => String(value ?? "—").replace(/[&<>"']/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" })[character]);
+  return `<div class="court-popup"><h2>${safe(court.name)}</h2><p>${safe(court.description || "")}</p><div class="details">
+    <span>Type</span><strong>${safe(court.type)}</strong><span>Surface condition</span><strong>${safe(court.surface)}</strong>
+    <span>Hoops</span><strong>${safe(court.hoops)}</strong><span>Nets</span><strong>${safe(court.nets)}</strong>
+    <span>Court condition</span><strong>${safe(court.condition)}</strong><span>Lights</span><strong>${safe(court.lights)}</strong>
+    <span>Parking</span><strong>${safe(court.parking)}</strong>
   </div><a class="directions" target="_blank" rel="noopener" href="${directions}">Get directions</a></div>`;
 }
 
@@ -47,7 +49,7 @@ function render() {
 }
 
 async function start() {
-  map = L.map("map", { zoomControl:false }).setView([50.8225, -0.1372], 12);
+  map = L.map("map", { zoomControl:false }).setView([50.71, -3.51], 12);
   L.control.zoom({ position:"bottomright" }).addTo(map);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19, attribution:"© OpenStreetMap contributors" }).addTo(map);
   try { allCourts = await (await fetch("courts.json")).json(); render(); }
