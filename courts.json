@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Example court — replace me",
+    "location": "Brighton, East Sussex",
+    "lat": 50.8225,
+    "lng": -0.1372,
+    "type": "Outdoor",
+    "surface": "Tarmac",
+    "hoops": 2,
+    "condition": "Good",
+    "parking": "No",
+    "lights": "No",
+    "water": "No",
+    "toilets": "No",
+    "description": "This is a sample entry. Replace it with a real court before sharing your website.",
+    "photos": []
+  }
+]

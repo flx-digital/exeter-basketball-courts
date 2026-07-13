@@ -1,0 +1,25 @@
+:root { --ink:#17212b; --muted:#617080; --orange:#f56b24; --paper:#fffdf9; --line:#e8e4de; }
+* { box-sizing:border-box; }
+body { margin:0; color:var(--ink); background:var(--paper); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.site-header { height:64px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:0 24px; border-bottom:1px solid var(--line); background:#fff; }
+.brand { color:var(--ink); font-size:1.1rem; font-weight:800; text-decoration:none; }
+.suggest { border:1px solid var(--orange); border-radius:999px; color:#b5450e; font-size:.88rem; font-weight:700; padding:8px 13px; text-decoration:none; }
+main { display:grid; grid-template-columns:350px 1fr; height:calc(100dvh - 64px); }
+.sidebar { overflow:auto; padding:25px 22px 32px; border-right:1px solid var(--line); background:var(--paper); }
+h1 { margin:0; font-size:1.65rem; line-height:1.1; }
+.intro { margin:9px 0 22px; color:var(--muted); font-size:.94rem; line-height:1.45; }
+.search-label { display:block; margin-bottom:6px; font-size:.84rem; font-weight:700; }
+input[type="search"] { width:100%; border:1px solid #cbd1d5; border-radius:8px; padding:11px 12px; color:var(--ink); font:inherit; }
+fieldset { margin:24px 0 18px; padding:0; border:0; }
+legend { margin-bottom:9px; font-size:.84rem; font-weight:800; }
+fieldset label { display:block; margin:10px 0; font-size:.92rem; }
+input[type="checkbox"] { accent-color:var(--orange); margin-right:7px; }
+.court-count { margin:18px 0 8px; color:var(--muted); font-size:.82rem; font-weight:700; }
+.court-card { width:100%; cursor:pointer; margin:8px 0; padding:13px; border:1px solid var(--line); border-radius:10px; background:#fff; color:inherit; font:inherit; text-align:left; }
+.court-card:hover, .court-card:focus { border-color:var(--orange); outline:none; }
+.court-card h2 { margin:0 0 5px; font-size:.98rem; }
+.court-card p { margin:0; color:var(--muted); font-size:.82rem; }
+#map { min-width:0; background:#d9e6ed; }
+.court-popup h2 { margin:0 0 4px; font-size:1.05rem; }.court-popup p { margin:6px 0; line-height:1.4; }.court-popup .details { display:grid; grid-template-columns:auto auto; gap:4px 12px; margin:12px 0; font-size:.87rem; }.court-popup .details span:nth-child(odd) { color:#607080; }.directions { display:inline-block; margin-top:4px; padding:8px 10px; border-radius:6px; color:#fff; background:var(--orange); font-size:.85rem; font-weight:700; text-decoration:none; }
+.marker { width:28px; height:28px; display:grid; place-items:center; border:2px solid #fff; border-radius:50%; box-shadow:0 1px 5px #0005; background:var(--orange); font-size:15px; }.marker.indoor { background:#2878bd; }.marker.poor { background:#ce3d38; }
+@media (max-width:700px) { .site-header { padding:0 15px; }.brand span { display:none; } main { display:flex; flex-direction:column; height:auto; min-height:calc(100dvh - 64px); }.sidebar { max-height:48dvh; padding:20px 16px; border-right:0; border-bottom:1px solid var(--line); } #map { height:52dvh; flex:1; }.court-list { display:flex; overflow-x:auto; gap:8px; }.court-card { min-width:220px; } }
