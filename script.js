@@ -5,6 +5,85 @@ let markers = [];
 const filters = ["indoor", "outdoor", "water", "toilets"];
 const yes = value => String(value).toLowerCase() === "yes" || value === true;
 
+function parseCsv(text) {
+  const rows = [];
+  const lines = text.trim().split(/\r?\n/);
+  const headers = [];
+  let current = [];
+  let inQuotes = false;
+
+  const pushField = () => {
+    const value = current.join("").trim();
+    headers.push(value);
+    current = [];
+  };
+
+  for (let i = 0; i < lines.length; i += 1) {
+    if (!lines[i].trim()) continue;
+
+    current = [];
+    const cells = [];
+    let field = "";
+    let quote = false;
+
+    for (let j = 0; j < lines[i].length; j += 1) {
+      const char = lines[i][j];
+      if (char === '"') {
+        if (quote && lines[i][j + 1] === '"') {
+          field += '"';
+          j += 1;
+        } else {
+          quote = !quote;
+        }
+      } else if (char === "," && !quote) {
+        cells.push(field.trim());
+        field = "";
+      } else {
+        field += char;
+      }
+    }
+
+    cells.push(field.trim());
+
+    if (i === 0) {
+      headers.push(...cells);
+      continue;
+    }
+
+    const row = {};
+    headers.forEach((header, index) => {
+      row[header] = cells[index] ? cells[index].trim() : "";
+    });
+    rows.push(row);
+  }
+
+  return rows.map(row => ({
+    ...row,
+    name: row.name || "Basketball court",
+    location: row.location || "",
+    lat: Number(row.lat),
+    lng: Number(row.lng),
+    type: row.type || "Outdoor",
+    surface: row.surface || "",
+    hoops: row.hoops || "",
+    nets: row.nets || "",
+    condition: row.condition || "",
+    description: row.description || "",
+    water: row.water || "",
+    toilets: row.toilets || "",
+  }));
+}
+
+async function loadCourts() {
+  for (const file of ["courts.csv", "data.csv"]) {
+    const response = await fetch(file);
+    if (!response.ok) continue;
+    const text = await response.text();
+    return parseCsv(text);
+  }
+  throw new Error("Failed to load a court CSV file");
+}
+
 function markerIcon(court) {
   const kind = court.type === "Indoor" ? "indoor" : court.condition === "Poor" || court.surface === "Poor" ? "poor" : "";
   return L.divIcon({ className:"", html:`<div class="marker ${kind}">🏀</div>`, iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-15] });
@@ -51,8 +130,14 @@ async function start() {
   map = L.map("map", { zoomControl:false }).setView([50.71, -3.51], 12);
   L.control.zoom({ position:"bottomright" }).addTo(map);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19, attribution:"© OpenStreetMap contributors" }).addTo(map);
-  try { allCourts = await (await fetch("courts.json")).json(); render(); }
-  catch { document.querySelector("#court-count").textContent = "Could not load the court list."; }
+  try {
+    allCourts = await loadCourts();
+    render();
+  }
+  catch (error) {
+    console.error(error);
+    document.querySelector("#court-count").textContent = "Could not load the court list.";
+  }
   document.querySelector("#search").addEventListener("input", render);
   filters.forEach(id => document.querySelector(`#${id}`).addEventListener("change", render));
 }
