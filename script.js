@@ -2,7 +2,7 @@ let map;
 let allCourts = [];
 let markers = [];
 
-const filters = ["indoor", "outdoor", "water", "toilets"];
+const filters = ["indoor", "outdoor", "lights", "parking", "water", "toilets"];
 const yes = value => String(value).toLowerCase() === "yes" || value === true;
 
 function markerIcon(court) {
@@ -16,7 +16,8 @@ function popup(court) {
   return `<div class="court-popup"><h2>${safe(court.name)}</h2><p>${safe(court.description || "")}</p><div class="details">
     <span>Type</span><strong>${safe(court.type)}</strong><span>Surface condition</span><strong>${safe(court.surface)}</strong>
     <span>Hoops</span><strong>${safe(court.hoops)}</strong><span>Nets</span><strong>${safe(court.nets)}</strong>
-    <span>Court condition</span><strong>${safe(court.condition)}</strong>
+    <span>Court condition</span><strong>${safe(court.condition)}</strong><span>Lights</span><strong>${safe(court.lights)}</strong>
+    <span>Parking</span><strong>${safe(court.parking)}</strong>
   </div><a class="directions" target="_blank" rel="noopener" href="${directions}">Get directions</a></div>`;
 }
 
@@ -26,7 +27,7 @@ function matches(court) {
   if (search && !text.includes(search)) return false;
   if (document.querySelector("#indoor").checked && court.type !== "Indoor") return false;
   if (document.querySelector("#outdoor").checked && court.type !== "Outdoor") return false;
-  return !["water", "toilets"].some(key => document.querySelector(`#${key}`).checked && !yes(court[key]));
+  return !["lights", "parking", "water", "toilets"].some(key => document.querySelector(`#${key}`).checked && !yes(court[key]));
 }
 
 function render() {
