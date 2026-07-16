@@ -59,18 +59,18 @@ function parseCsv(text) {
 
   return rows.map(row => ({
     ...row,
-    name: row.name || "Basketball court",
-    location: row.location || "",
-    lat: Number(row.lat),
-    lng: Number(row.lng),
-    type: row.type || "Outdoor",
-    surface: row.surface || "",
-    hoops: row.hoops || "",
-    nets: row.nets || "",
-    condition: row.condition || "",
-    description: row.description || "",
-    water: row.water || "",
-    toilets: row.toilets || "",
+    name: row.name || row.Name || "Basketball court",
+    location: row.location || row.Location || "",
+    lat: Number(row.lat || row.Latitude || row.latitude || row.latitude),
+    lng: Number(row.lng || row.Longitude || row.longitude || row.longitude),
+    type: row.type || row.Type || row["Court size"] || "Outdoor",
+    surface: row.surface || row.Surface || "",
+    hoops: row.hoops || row.Hoops || "",
+    nets: row.nets || row.Nets || "",
+    condition: row.condition || row.Condition || row["Overall Condition"] || "",
+    description: row.description || row.Description || row.Details || "",
+    water: row.water || row.Water || "",
+    toilets: row.toilets || row.Toilets || "",
   }));
 }
 
