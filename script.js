@@ -74,13 +74,26 @@ function parseCsv(text) {
   }));
 }
 
+function buildCsvUrl(file) {
+  const url = new URL(file, window.location.href);
+  url.searchParams.set("t", String(Date.now()));
+  return url.toString();
+}
+
 async function loadCourts() {
-  for (const file of ["courts.csv", "data.csv"]) {
-    const response = await fetch(file);
-    if (!response.ok) continue;
-    const text = await response.text();
-    return parseCsv(text);
+  const preferredFiles = ["courts.csv", "data.csv", "basketball courts.csv", "basketball-courts.csv"];
+
+  for (const file of preferredFiles) {
+    try {
+      const response = await fetch(buildCsvUrl(file));
+      if (!response.ok) continue;
+      const text = await response.text();
+      return parseCsv(text);
+    } catch (error) {
+      console.warn(`Could not load ${file}`, error);
+    }
   }
+
   throw new Error("Failed to load a court CSV file");
 }
 
