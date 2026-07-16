@@ -21,5 +21,8 @@ input[type="checkbox"] { accent-color:var(--orange); margin-right:7px; }
 .court-card p { margin:0; color:var(--muted); font-size:.82rem; }
 #map { min-width:0; background:#d9e6ed; }
 .court-popup h2 { margin:0 0 4px; font-size:1.05rem; }.court-popup p { margin:6px 0; line-height:1.4; }.court-popup .details { display:grid; grid-template-columns:auto auto; gap:4px 12px; margin:12px 0; font-size:.87rem; }.court-popup .details span:nth-child(odd) { color:#607080; }.directions { display:inline-block; margin-top:4px; padding:8px 10px; border-radius:6px; color:#fff; background:var(--orange); font-size:.85rem; font-weight:700; text-decoration:none; }
-.marker { width:28px; height:28px; display:grid; place-items:center; border:2px solid #fff; border-radius:50%; box-shadow:0 1px 5px #0005; background:var(--orange); font-size:15px; }.marker.indoor { background:#2878bd; }.marker.poor { background:#ce3d38; }
+.marker { width:28px; height:28px; display:grid; place-items:center; border:2px solid #fff; border-radius:50%; box-shadow:0 1px 5px #0005; font-size:15px; background:#f56b24; }
+.marker.half { background:#f5d300; }
+.marker.full { background:#46a546; }
+.marker.default { background:#f56b24; }
 @media (max-width:700px) { .site-header { padding:0 15px; }.brand span { display:none; } main { display:flex; flex-direction:column; height:auto; min-height:calc(100dvh - 64px); }.sidebar { max-height:48dvh; padding:20px 16px; border-right:0; border-bottom:1px solid var(--line); } #map { height:52dvh; flex:1; }.court-list { display:flex; overflow-x:auto; gap:8px; }.court-card { min-width:220px; } }

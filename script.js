@@ -2,8 +2,7 @@ let map;
 let allCourts = [];
 let markers = [];
 
-const filters = ["indoor", "outdoor", "water", "toilets"];
-const yes = value => String(value).toLowerCase() === "yes" || value === true;
+const filters = ["half", "full"];
 
 function parseCsv(text) {
   const rows = [];
@@ -98,7 +97,8 @@ async function loadCourts() {
 }
 
 function markerIcon(court) {
-  const kind = court.type === "Indoor" ? "indoor" : court.condition === "Poor" || court.surface === "Poor" ? "poor" : "";
+  const type = String(court.type || "").toLowerCase();
+  const kind = type.includes("half") ? "half" : type.includes("full") ? "full" : "default";
   return L.divIcon({ className:"", html:`<div class="marker ${kind}">🏀</div>`, iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-15] });
 }
 
@@ -116,9 +116,10 @@ function matches(court) {
   const search = document.querySelector("#search").value.trim().toLowerCase();
   const text = `${court.name} ${court.location || ""}`.toLowerCase();
   if (search && !text.includes(search)) return false;
-  if (document.querySelector("#indoor").checked && court.type !== "Indoor") return false;
-  if (document.querySelector("#outdoor").checked && court.type !== "Outdoor") return false;
-  return !["water", "toilets"].some(key => document.querySelector(`#${key}`).checked && !yes(court[key]));
+  const type = String(court.type || "").toLowerCase();
+  if (document.querySelector("#half").checked && !type.includes("half")) return false;
+  if (document.querySelector("#full").checked && !type.includes("full")) return false;
+  return true;
 }
 
 function render() {
