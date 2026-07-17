@@ -14,8 +14,8 @@ function loadImage(img) {
   img.classList.add("is-loaded");
 }
 
-function observeImages() {
-  const images = Array.from(document.querySelectorAll("img[data-src]"));
+function observeImages(root = document) {
+  const images = Array.from(root.querySelectorAll ? root.querySelectorAll("img[data-src]") : []);
   if (!images.length) return;
 
   if (!("IntersectionObserver" in window)) {
@@ -266,6 +266,10 @@ function render() {
   document.querySelector("#court-count").textContent = `${courts.length} court${courts.length === 1 ? "" : "s"} found`;
   courts.forEach(court => {
     const marker = L.marker([court.lat, court.lng], { icon:markerIcon(court) }).addTo(map).bindPopup(popup(court));
+    marker.on("popupopen", () => {
+      const popupElement = marker.getPopup()?.getElement();
+      if (popupElement) observeImages(popupElement);
+    });
     markers.push(marker);
     const card = document.createElement("button");
     card.className = "court-card";
