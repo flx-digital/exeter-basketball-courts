@@ -28,7 +28,8 @@ input[type="checkbox"] { accent-color:var(--orange); margin-right:7px; }
 .image-modal.is-visible { display:flex; }
 .image-modal img { max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.35); }
 .image-modal-close { position:absolute; top:16px; right:16px; width:42px; height:42px; border:none; border-radius:50%; background:#fff; color:#17212b; font-size:1.4rem; cursor:pointer; }
-.image-modal-nav { position:absolute; top:50%; transform:translateY(-50%); width:46px; height:46px; border:none; border-radius:50%; background:#fff; color:#17212b; font-size:1.6rem; cursor:pointer; }
+.image-modal-nav { position:absolute; top:50%; transform:translateY(-50%); width:46px; height:46px; border:none; border-radius:50%; background:#fff; color:#17212b; font-size:1.6rem; cursor:pointer; display:none; }
+.image-modal-nav.is-visible { display:block; }
 .image-modal-prev { left:16px; }
 .image-modal-next { right:16px; }
 @media (max-width:700px) { .image-modal-nav { width:40px; height:40px; font-size:1.4rem; } }

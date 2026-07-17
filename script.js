@@ -40,18 +40,32 @@ function observeImages(root = document) {
 let galleryImages = [];
 let galleryIndex = 0;
 
+function setModalNavigationVisibility() {
+  const prevButton = document.querySelector("#image-modal-prev");
+  const nextButton = document.querySelector("#image-modal-next");
+  const hasMultiple = galleryImages.length > 1;
+  prevButton?.classList.toggle("is-visible", hasMultiple);
+  nextButton?.classList.toggle("is-visible", hasMultiple);
+}
+
 function openImageModal(imageElement) {
   const modal = document.querySelector("#image-modal");
   const modalImage = document.querySelector("#image-modal-image");
   if (!modal || !modalImage || !imageElement) return;
 
-  const allImages = Array.from(document.querySelectorAll("img[data-full-src]"));
-  galleryImages = allImages.filter(img => img.dataset.fullSrc);
+  if (imageElement.dataset.gallery === "detail") {
+    const popup = imageElement.closest(".court-popup");
+    galleryImages = popup ? Array.from(popup.querySelectorAll("img[data-gallery='detail']")) : [imageElement];
+  } else {
+    galleryImages = [imageElement];
+  }
+
   galleryIndex = galleryImages.indexOf(imageElement);
   if (galleryIndex < 0) galleryIndex = 0;
 
   modalImage.src = imageElement.dataset.fullSrc || imageElement.dataset.src || imageElement.src;
   modalImage.alt = imageElement.alt || "Court photo";
+  setModalNavigationVisibility();
   modal.classList.add("is-visible");
   modal.setAttribute("aria-hidden", "false");
 }
@@ -228,16 +242,16 @@ function resolvePhotoUrl(photo) {
   return new URL(compressed, window.location.href).toString();
 }
 
-function makePhotoMarkup(photo, alt, className, index = 0) {
+function makePhotoMarkup(photo, alt, className, index = 0, gallery = "overview") {
   const resolved = resolvePhotoUrl(photo);
   if (!resolved) return "";
-  return `<img class="${className}" loading="lazy" decoding="async" src="${placeholderImage}" data-src="${resolved}" data-full-src="${resolved}" data-index="${index}" alt="${escapeHtml(alt)}" width="640" height="360" />`;
+  return `<img class="${className}" loading="lazy" decoding="async" src="${placeholderImage}" data-src="${resolved}" data-full-src="${resolved}" data-index="${index}" data-gallery="${gallery}" alt="${escapeHtml(alt)}" width="640" height="360" />`;
 }
 
 function popup(court) {
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${court.lat},${court.lng}`;
   const photosMarkup = court.photos?.length
-    ? `<div class="court-photos">${court.photos.slice(0, 4).map((photo, index) => makePhotoMarkup(photo, court.name, "court-popup-photo", index)).join("")}</div>`
+    ? `<div class="court-photos">${court.photos.slice(0, 4).map((photo, index) => makePhotoMarkup(photo, court.name, "court-popup-photo", index, "detail")).join("")}</div>`
     : "";
 
   return `<div class="court-popup"><h2>${escapeHtml(court.name)}</h2><p>${escapeHtml(court.description || "")}</p><div class="details">
@@ -273,7 +287,7 @@ function render() {
     markers.push(marker);
     const card = document.createElement("button");
     card.className = "court-card";
-    const photoMarkup = court.photos?.length ? makePhotoMarkup(court.photos[0], court.name, "court-photo-thumb") : "";
+    const photoMarkup = court.photos?.length ? makePhotoMarkup(court.photos[0], court.name, "court-photo-thumb", 0, "overview") : "";
     card.innerHTML = `${photoMarkup}<div class="court-card-content"><h2>${escapeHtml(court.name)}</h2><p>${escapeHtml(court.location || court.type || "Basketball court")}</p></div>`;
     card.addEventListener("click", () => { map.setView([court.lat, court.lng], 16); marker.openPopup(); });
     list.append(card);
