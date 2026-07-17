@@ -15,10 +15,15 @@ legend { margin-bottom:9px; font-size:.84rem; font-weight:800; }
 fieldset label { display:block; margin:10px 0; font-size:.92rem; }
 input[type="checkbox"] { accent-color:var(--orange); margin-right:7px; }
 .court-count { margin:18px 0 8px; color:var(--muted); font-size:.82rem; font-weight:700; }
-.court-card { width:100%; cursor:pointer; margin:8px 0; padding:13px; border:1px solid var(--line); border-radius:10px; background:#fff; color:inherit; font:inherit; text-align:left; }
+.court-card { width:100%; cursor:pointer; margin:8px 0; padding:13px; border:1px solid var(--line); border-radius:10px; background:#fff; color:inherit; font:inherit; text-align:left; display:flex; flex-direction:column; gap:10px; }
 .court-card:hover, .court-card:focus { border-color:var(--orange); outline:none; }
 .court-card h2 { margin:0 0 5px; font-size:.98rem; }
 .court-card p { margin:0; color:var(--muted); font-size:.82rem; }
+.court-photo-thumb { width:100%; height:120px; object-fit:cover; border-radius:8px; display:block; }
+.court-card-content { display:flex; flex-direction:column; gap:4px; }
+.court-popup h2 { margin:0 0 4px; font-size:1.05rem; }.court-popup p { margin:6px 0; line-height:1.4; }.court-popup .details { display:grid; grid-template-columns:auto auto; gap:4px 12px; margin:12px 0; font-size:.87rem; }.court-popup .details span:nth-child(odd) { color:#607080; }.directions { display:inline-block; margin-top:4px; padding:8px 10px; border-radius:6px; color:#fff; background:var(--orange); font-size:.85rem; font-weight:700; text-decoration:none; }
+.court-photos { display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:8px; margin:12px 0 8px; }
+.court-photos img { width:100%; height:90px; object-fit:cover; border-radius:8px; display:block; }
 #map { min-width:0; background:#d9e6ed; }
 .court-popup h2 { margin:0 0 4px; font-size:1.05rem; }.court-popup p { margin:6px 0; line-height:1.4; }.court-popup .details { display:grid; grid-template-columns:auto auto; gap:4px 12px; margin:12px 0; font-size:.87rem; }.court-popup .details span:nth-child(odd) { color:#607080; }.directions { display:inline-block; margin-top:4px; padding:8px 10px; border-radius:6px; color:#fff; background:var(--orange); font-size:.85rem; font-weight:700; text-decoration:none; }
 .marker { width:28px; height:28px; display:grid; place-items:center; border:2px solid #fff; border-radius:50%; box-shadow:0 1px 5px #0005; font-size:15px; background:#f56b24; }

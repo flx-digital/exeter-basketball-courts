@@ -4,6 +4,31 @@ let markers = [];
 
 const filters = ["half", "full"];
 
+function escapeHtml(value) {
+  return String(value ?? "—").replace(/[&<>"']/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" })[character]);
+}
+
+function collectPhotos(row) {
+  const photos = [];
+  const addValue = value => {
+    if (typeof value !== "string") return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    if (!photos.includes(trimmed)) photos.push(trimmed);
+  };
+
+  addValue(row.photo);
+  addValue(row.Photo);
+  addValue(row.photos);
+  addValue(row.Photos);
+
+  Object.entries(row).forEach(([key, value]) => {
+    if (/^photo(?:\s+\d+|\d+)?$/i.test(key)) addValue(value);
+  });
+
+  return photos;
+}
+
 function parseCsv(text) {
   const rows = [];
   const lines = text.trim().split(/\r?\n/);
@@ -70,6 +95,7 @@ function parseCsv(text) {
     description: row.description || row.Description || row.Details || "",
     water: row.water || row.Water || "",
     toilets: row.toilets || row.Toilets || "",
+    photos: collectPhotos(row),
   }));
 }
 
@@ -102,14 +128,23 @@ function markerIcon(court) {
   return L.divIcon({ className:"", html:`<div class="marker ${kind}">🏀</div>`, iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-15] });
 }
 
+function resolvePhotoUrl(photo) {
+  if (!photo) return "";
+  if (/^https?:\/\//i.test(photo) || photo.startsWith("/")) return photo;
+  return new URL(photo, window.location.href).toString();
+}
+
 function popup(court) {
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${court.lat},${court.lng}`;
-  const safe = value => String(value ?? "—").replace(/[&<>"']/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" })[character]);
-  return `<div class="court-popup"><h2>${safe(court.name)}</h2><p>${safe(court.description || "")}</p><div class="details">
-    <span>Type</span><strong>${safe(court.type)}</strong><span>Surface condition</span><strong>${safe(court.surface)}</strong>
-    <span>Hoops</span><strong>${safe(court.hoops)}</strong><span>Nets</span><strong>${safe(court.nets)}</strong>
-    <span>Court condition</span><strong>${safe(court.condition)}</strong>
-  </div><a class="directions" target="_blank" rel="noopener" href="${directions}">Get directions</a></div>`;
+  const photosMarkup = court.photos?.length
+    ? `<div class="court-photos">${court.photos.slice(0, 4).map(photo => `<img loading="lazy" src="${resolvePhotoUrl(photo)}" alt="${escapeHtml(court.name)}" />`).join("")}</div>`
+    : "";
+
+  return `<div class="court-popup"><h2>${escapeHtml(court.name)}</h2><p>${escapeHtml(court.description || "")}</p><div class="details">
+    <span>Type</span><strong>${escapeHtml(court.type)}</strong><span>Surface condition</span><strong>${escapeHtml(court.surface)}</strong>
+    <span>Hoops</span><strong>${escapeHtml(court.hoops)}</strong><span>Nets</span><strong>${escapeHtml(court.nets)}</strong>
+    <span>Court condition</span><strong>${escapeHtml(court.condition)}</strong>
+  </div>${photosMarkup}<a class="directions" target="_blank" rel="noopener" href="${directions}">Get directions</a></div>`;
 }
 
 function matches(court) {
@@ -134,7 +169,8 @@ function render() {
     markers.push(marker);
     const card = document.createElement("button");
     card.className = "court-card";
-    card.innerHTML = `<h2>${court.name}</h2><p>${court.location || court.type || "Basketball court"}</p>`;
+    const photoMarkup = court.photos?.length ? `<img class="court-photo-thumb" loading="lazy" src="${resolvePhotoUrl(court.photos[0])}" alt="${escapeHtml(court.name)}" />` : "";
+    card.innerHTML = `${photoMarkup}<div class="court-card-content"><h2>${escapeHtml(court.name)}</h2><p>${escapeHtml(court.location || court.type || "Basketball court")}</p></div>`;
     card.addEventListener("click", () => { map.setView([court.lat, court.lng], 16); marker.openPopup(); });
     list.append(card);
   });
