@@ -37,15 +37,33 @@ function observeImages() {
   images.forEach(img => imageObserver.observe(img));
 }
 
+let galleryImages = [];
+let galleryIndex = 0;
+
 function openImageModal(imageElement) {
   const modal = document.querySelector("#image-modal");
   const modalImage = document.querySelector("#image-modal-image");
   if (!modal || !modalImage || !imageElement) return;
 
+  const allImages = Array.from(document.querySelectorAll("img[data-full-src]"));
+  galleryImages = allImages.filter(img => img.dataset.fullSrc);
+  galleryIndex = galleryImages.indexOf(imageElement);
+  if (galleryIndex < 0) galleryIndex = 0;
+
   modalImage.src = imageElement.dataset.fullSrc || imageElement.dataset.src || imageElement.src;
   modalImage.alt = imageElement.alt || "Court photo";
   modal.classList.add("is-visible");
   modal.setAttribute("aria-hidden", "false");
+}
+
+function showGalleryImage(direction) {
+  if (!galleryImages.length) return;
+  galleryIndex = (galleryIndex + direction + galleryImages.length) % galleryImages.length;
+  const image = galleryImages[galleryIndex];
+  const modalImage = document.querySelector("#image-modal-image");
+  if (!modalImage || !image) return;
+  modalImage.src = image.dataset.fullSrc || image.dataset.src || image.src;
+  modalImage.alt = image.alt || "Court photo";
 }
 
 function closeImageModal() {
@@ -69,8 +87,12 @@ function bindImageEvents() {
   });
 
   document.querySelector(".image-modal-close")?.addEventListener("click", closeImageModal);
+  document.querySelector("#image-modal-next")?.addEventListener("click", () => showGalleryImage(1));
+  document.querySelector("#image-modal-prev")?.addEventListener("click", () => showGalleryImage(-1));
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") closeImageModal();
+    if (event.key === "ArrowRight") showGalleryImage(1);
+    if (event.key === "ArrowLeft") showGalleryImage(-1);
   });
 }
 
@@ -201,19 +223,21 @@ function markerIcon(court) {
 function resolvePhotoUrl(photo) {
   if (!photo) return "";
   if (/^https?:\/\//i.test(photo) || photo.startsWith("/")) return photo;
-  return new URL(photo, window.location.href).toString();
+  const trimmed = photo.trim();
+  const compressed = trimmed.replace(/^photos\//, "photos/compressed/");
+  return new URL(compressed, window.location.href).toString();
 }
 
-function makePhotoMarkup(photo, alt, className) {
+function makePhotoMarkup(photo, alt, className, index = 0) {
   const resolved = resolvePhotoUrl(photo);
   if (!resolved) return "";
-  return `<img class="${className}" loading="lazy" decoding="async" src="${placeholderImage}" data-src="${resolved}" data-full-src="${resolved}" alt="${escapeHtml(alt)}" width="640" height="360" />`;
+  return `<img class="${className}" loading="lazy" decoding="async" src="${placeholderImage}" data-src="${resolved}" data-full-src="${resolved}" data-index="${index}" alt="${escapeHtml(alt)}" width="640" height="360" />`;
 }
 
 function popup(court) {
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${court.lat},${court.lng}`;
   const photosMarkup = court.photos?.length
-    ? `<div class="court-photos">${court.photos.slice(0, 4).map(photo => makePhotoMarkup(photo, court.name, "court-popup-photo")).join("")}</div>`
+    ? `<div class="court-photos">${court.photos.slice(0, 4).map((photo, index) => makePhotoMarkup(photo, court.name, "court-popup-photo", index)).join("")}</div>`
     : "";
 
   return `<div class="court-popup"><h2>${escapeHtml(court.name)}</h2><p>${escapeHtml(court.description || "")}</p><div class="details">
