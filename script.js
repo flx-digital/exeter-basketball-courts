@@ -1,8 +1,78 @@
 let map;
 let allCourts = [];
 let markers = [];
+let imageObserver = null;
 
 const filters = ["half", "full"];
+const placeholderImage = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+
+function loadImage(img) {
+  if (!img || !img.dataset.src) return;
+  const src = img.dataset.src;
+  img.src = src;
+  delete img.dataset.src;
+  img.classList.add("is-loaded");
+}
+
+function observeImages() {
+  const images = Array.from(document.querySelectorAll("img[data-src]"));
+  if (!images.length) return;
+
+  if (!("IntersectionObserver" in window)) {
+    images.forEach(loadImage);
+    return;
+  }
+
+  if (!imageObserver) {
+    imageObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          loadImage(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: "200px 0px" });
+  }
+
+  images.forEach(img => imageObserver.observe(img));
+}
+
+function openImageModal(imageElement) {
+  const modal = document.querySelector("#image-modal");
+  const modalImage = document.querySelector("#image-modal-image");
+  if (!modal || !modalImage || !imageElement) return;
+
+  modalImage.src = imageElement.dataset.fullSrc || imageElement.dataset.src || imageElement.src;
+  modalImage.alt = imageElement.alt || "Court photo";
+  modal.classList.add("is-visible");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeImageModal() {
+  const modal = document.querySelector("#image-modal");
+  if (!modal) return;
+  modal.classList.remove("is-visible");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function bindImageEvents() {
+  document.addEventListener("click", event => {
+    const target = event.target.closest("img[data-full-src]");
+    if (!target) return;
+
+    event.preventDefault();
+    openImageModal(target);
+  });
+
+  document.querySelector("#image-modal")?.addEventListener("click", event => {
+    if (event.target.id === "image-modal") closeImageModal();
+  });
+
+  document.querySelector(".image-modal-close")?.addEventListener("click", closeImageModal);
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeImageModal();
+  });
+}
 
 function escapeHtml(value) {
   return String(value ?? "—").replace(/[&<>"']/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" })[character]);
@@ -134,10 +204,16 @@ function resolvePhotoUrl(photo) {
   return new URL(photo, window.location.href).toString();
 }
 
+function makePhotoMarkup(photo, alt, className) {
+  const resolved = resolvePhotoUrl(photo);
+  if (!resolved) return "";
+  return `<img class="${className}" loading="lazy" decoding="async" src="${placeholderImage}" data-src="${resolved}" data-full-src="${resolved}" alt="${escapeHtml(alt)}" width="640" height="360" />`;
+}
+
 function popup(court) {
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${court.lat},${court.lng}`;
   const photosMarkup = court.photos?.length
-    ? `<div class="court-photos">${court.photos.slice(0, 4).map(photo => `<img loading="lazy" src="${resolvePhotoUrl(photo)}" alt="${escapeHtml(court.name)}" />`).join("")}</div>`
+    ? `<div class="court-photos">${court.photos.slice(0, 4).map(photo => makePhotoMarkup(photo, court.name, "court-popup-photo")).join("")}</div>`
     : "";
 
   return `<div class="court-popup"><h2>${escapeHtml(court.name)}</h2><p>${escapeHtml(court.description || "")}</p><div class="details">
@@ -169,17 +245,21 @@ function render() {
     markers.push(marker);
     const card = document.createElement("button");
     card.className = "court-card";
-    const photoMarkup = court.photos?.length ? `<img class="court-photo-thumb" loading="lazy" src="${resolvePhotoUrl(court.photos[0])}" alt="${escapeHtml(court.name)}" />` : "";
+    const photoMarkup = court.photos?.length ? makePhotoMarkup(court.photos[0], court.name, "court-photo-thumb") : "";
     card.innerHTML = `${photoMarkup}<div class="court-card-content"><h2>${escapeHtml(court.name)}</h2><p>${escapeHtml(court.location || court.type || "Basketball court")}</p></div>`;
     card.addEventListener("click", () => { map.setView([court.lat, court.lng], 16); marker.openPopup(); });
     list.append(card);
   });
+
+  observeImages();
 }
 
 async function start() {
   map = L.map("map", { zoomControl:false }).setView([50.71, -3.51], 12);
   L.control.zoom({ position:"bottomright" }).addTo(map);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19, attribution:"© OpenStreetMap contributors" }).addTo(map);
+  bindImageEvents();
+
   try {
     allCourts = await loadCourts();
     render();
