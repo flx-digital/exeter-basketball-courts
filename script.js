@@ -54,8 +54,10 @@ function openImageModal(imageElement) {
   if (!modal || !modalImage || !imageElement) return;
 
   if (imageElement.dataset.gallery === "detail") {
-    const popup = imageElement.closest(".court-popup");
-    galleryImages = popup ? Array.from(popup.querySelectorAll("img[data-gallery='detail']")) : [imageElement];
+    const galleryGroup = imageElement.dataset.galleryGroup || imageElement.closest(".court-popup")?.dataset.galleryGroup;
+    galleryImages = galleryGroup
+      ? Array.from(document.querySelectorAll("img[data-gallery='detail']")).filter(img => img.dataset.galleryGroup === galleryGroup)
+      : [imageElement];
   } else {
     galleryImages = [imageElement];
   }
@@ -242,19 +244,20 @@ function resolvePhotoUrl(photo) {
   return new URL(compressed, window.location.href).toString();
 }
 
-function makePhotoMarkup(photo, alt, className, index = 0, gallery = "overview") {
+function makePhotoMarkup(photo, alt, className, index = 0, gallery = "overview", galleryGroup = "") {
   const resolved = resolvePhotoUrl(photo);
   if (!resolved) return "";
-  return `<img class="${className}" loading="lazy" decoding="async" src="${placeholderImage}" data-src="${resolved}" data-full-src="${resolved}" data-index="${index}" data-gallery="${gallery}" alt="${escapeHtml(alt)}" width="640" height="360" />`;
+  return `<img class="${className}" loading="lazy" decoding="async" src="${placeholderImage}" data-src="${resolved}" data-full-src="${resolved}" data-index="${index}" data-gallery="${gallery}" data-gallery-group="${galleryGroup}" alt="${escapeHtml(alt)}" width="640" height="360" />`;
 }
 
 function popup(court) {
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${court.lat},${court.lng}`;
+  const galleryGroup = encodeURIComponent(court.name || "court");
   const photosMarkup = court.photos?.length
-    ? `<div class="court-photos">${court.photos.slice(0, 4).map((photo, index) => makePhotoMarkup(photo, court.name, "court-popup-photo", index, "detail")).join("")}</div>`
+    ? `<div class="court-photos">${court.photos.slice(0, 4).map((photo, index) => makePhotoMarkup(photo, court.name, "court-popup-photo", index, "detail", galleryGroup)).join("")}</div>`
     : "";
 
-  return `<div class="court-popup"><h2>${escapeHtml(court.name)}</h2><p>${escapeHtml(court.description || "")}</p><div class="details">
+  return `<div class="court-popup" data-gallery-group="${galleryGroup}"><h2>${escapeHtml(court.name)}</h2><p>${escapeHtml(court.description || "")}</p><div class="details">
     <span>Type</span><strong>${escapeHtml(court.type)}</strong><span>Surface condition</span><strong>${escapeHtml(court.surface)}</strong>
     <span>Hoops</span><strong>${escapeHtml(court.hoops)}</strong><span>Nets</span><strong>${escapeHtml(court.nets)}</strong>
     <span>Court condition</span><strong>${escapeHtml(court.condition)}</strong>
